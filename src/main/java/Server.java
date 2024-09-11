@@ -45,7 +45,6 @@ public class Server {
     public void listen() {
         try (
                 final var socket = serverSocket.accept();
-//                final var in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 final var in = new BufferedInputStream(socket.getInputStream());
                 final var out = new BufferedOutputStream(socket.getOutputStream());
         ) {
@@ -53,7 +52,6 @@ public class Server {
             in.mark(max);
             final var message = new byte[max];
             final var read = in.read(message);
-//            final var message = in.readAllBytes();
 
             int indexRequestLineEnd = -1;
             for (int i = 0; i < read - 1; i++) {
@@ -116,7 +114,7 @@ public class Server {
                 headers.put(header[0], header[1]);
             }
 
-            final var bodyByte = Arrays.copyOfRange(message, indexHeadersEnd + 4,read);
+            final var bodyByte = Arrays.copyOfRange(message, indexHeadersEnd + 4, read);
             final var bodyStrung = new String(bodyByte);
             System.out.println(bodyStrung);
 
