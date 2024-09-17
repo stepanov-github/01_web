@@ -10,7 +10,8 @@ public class GetRequest {
         MediaType mediaType = MediaType.parse("text/plain");
         RequestBody body = RequestBody.create(mediaType, "");
         Request request = new Request.Builder()
-                .url("http://localhost:9999/classic.html")
+//                .url("http://localhost:9999/classic.html")
+                .url("http://localhost:9999/forms.html?login=afae&password=dthd")
                 .method("GET", null)
                 .build();
         Response response = client.newCall(request).execute();
