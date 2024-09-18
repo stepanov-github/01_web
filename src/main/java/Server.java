@@ -1,3 +1,5 @@
+import org.apache.hc.core5.http.NameValuePair;
+import org.apache.hc.core5.http.message.BasicNameValuePair;
 import org.apache.hc.core5.net.URLEncodedUtils;
 
 import java.io.BufferedInputStream;
@@ -5,18 +7,15 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.URI;
-import java.nio.charset.Charset;
+import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Server {
     //    private final
-    private final List<String> validPaths = List.of("/index.html", "/spring.svg", "/spring.png", "/resources.html", "/styles.css", "/app.js", "/links.html", "/forms.html", "/classic.html", "/events.html", "/events.js");
+    private final List<String> validPaths = List.of("/default-get.html", "/index.html", "/spring.svg", "/spring.png", "/resources.html", "/styles.css", "/app.js", "/links.html", "/forms.html", "/classic.html", "/events.html", "/events.js");
     private ServerSocket serverSocket;
     private Map<String, Map<String, Handler>> handlers = new HashMap<>();
 
@@ -82,6 +81,7 @@ public class Server {
 
                 return;
             }
+
             URI uri = new URI(parts[1]);
             final var pair = URLEncodedUtils.parse(uri, StandardCharsets.UTF_8);
 
@@ -122,11 +122,31 @@ public class Server {
 
             final var bodyByte = Arrays.copyOfRange(message, indexHeadersEnd + 4, read);
             final var bodyString = new String(bodyByte);
-            System.out.println(bodyString);
+            System.out.println("\r\n" + bodyString);
 
             Request request = new Request(parts[0], parts[1], parts[2], bodyByte, headers);
             request.setQueryParams(pair);
+
+            if (headers.containsKey("Content-Type")) {
+                if (headers.get("Content-Type").equals("application/x-www-form-urlencoded")) {
+                    String decodeBodyString = URLDecoder.decode(bodyString);
+                    final var bodyParts = decodeBodyString.split("&");
+                    List<NameValuePair> bodyParams = new ArrayList<>();
+                    for (String part : bodyParts) {
+                        final var bodyParam = part.split("=");
+                        if (bodyParam.length !=2) {
+                            continue;
+                        }
+                        bodyParams.add(new BasicNameValuePair(bodyParam[0],bodyParam[1]));
+                    }
+                        request.setBodyParams(bodyParams);
+                }
+
+            }
+
+
             System.out.println(request.toString());
+
             final var filePath = Path.of(".", "public", path);
             final var mimeType = Files.probeContentType(filePath);
 

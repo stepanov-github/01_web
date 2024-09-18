@@ -27,6 +27,12 @@
             <version>5.3.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>de.is24.spring</groupId>
+            <artifactId>base64-url-decoder</artifactId>
+            <version>1.0</version>
+        </dependency>
+
 </dependencies>
 
 </project>
