@@ -1,7 +1,12 @@
+import org.apache.hc.core5.net.URLEncodedUtils;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
+import java.net.URI;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -48,7 +53,7 @@ public class Server {
                 final var in = new BufferedInputStream(socket.getInputStream());
                 final var out = new BufferedOutputStream(socket.getOutputStream());
         ) {
-            final var max = 4000;
+            final var max = 4096;
             in.mark(max);
             final var message = new byte[max];
             final var read = in.read(message);
@@ -77,9 +82,10 @@ public class Server {
 
                 return;
             }
+            URI uri = new URI(parts[1]);
+            final var pair = URLEncodedUtils.parse(uri, StandardCharsets.UTF_8);
 
-
-            final var path = parts[1];
+            final var path = uri.getPath();
             if (!validPaths.contains(path)) {
                 out.write((
                         "HTTP/1.1 404 Not Found\r\n" +
@@ -115,10 +121,11 @@ public class Server {
             }
 
             final var bodyByte = Arrays.copyOfRange(message, indexHeadersEnd + 4, read);
-            final var bodyStrung = new String(bodyByte);
-            System.out.println(bodyStrung);
+            final var bodyString = new String(bodyByte);
+            System.out.println(bodyString);
 
-            Request request = new Request(parts[0], parts[1], parts[2], bodyStrung, headers);
+            Request request = new Request(parts[0], parts[1], parts[2], bodyByte, headers);
+            request.setQueryParams(pair);
             System.out.println(request.toString());
             final var filePath = Path.of(".", "public", path);
             final var mimeType = Files.probeContentType(filePath);

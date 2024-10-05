@@ -1,13 +1,17 @@
+import org.apache.hc.core5.http.NameValuePair;
+
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 
 public class Request {
 
     private String method, path, protocolVersion;
-    private String body;
+    private byte[] body;
     private Map<String, String> headers;
+    private List<NameValuePair> queryParams;
 
-    public Request(String method, String path, String protocolVersion, String body, Map<String, String> headers) {
+    public Request(String method, String path, String protocolVersion, byte[] body, Map<String, String> headers) {
         this.method = method;
         this.path = path;
         this.protocolVersion = protocolVersion;
@@ -31,12 +35,29 @@ public class Request {
         return protocolVersion;
     }
 
-    public String getBody() {
+    public byte[] getBody() {
         return body;
     }
 
     public Map<String, String> getHeaders() {
         return headers;
+    }
+
+    public List<NameValuePair> getQueryParams() {
+        return queryParams;
+    }
+
+    public String getQueryParam(String name) {
+        for (NameValuePair pair:queryParams) {
+            if (pair.getName().equals(name)) {
+                return pair.getValue();
+            }
+        }
+        return null;
+    }
+
+    public void setQueryParams(List<NameValuePair> queryParams) {
+        this.queryParams = queryParams;
     }
 
     public String toString() {
